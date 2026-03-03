@@ -1,7 +1,4 @@
-/**
- * VigiCólera Uige — MapaCasos
- * Layout 100% responsivo — Mobile + Tablet + Desktop
- */
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box, Card, Chip, Avatar, List, ListItem, ListItemButton,
