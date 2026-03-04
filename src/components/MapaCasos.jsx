@@ -1,4 +1,8 @@
-
+/**
+ * VigiCólera Uige — MapaCasos
+ * Layout 100% responsivo — Mobile + Tablet + Desktop
+ * Com pré-visualização de PDF antes de baixar
+ */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box, Card, Chip, Avatar, List, ListItem, ListItemButton,
@@ -642,7 +646,7 @@ export default function MapaCasos() {
 
   // ─── Lista de Casos (tab mobile) ──────────────────────────────────────────
   const CaseList = () => (
-    <Box sx={{display:'flex',flexDirection:'column',height:'100%',overflow:'hidden'}}>
+    <Box sx={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
       <Box sx={{px:2,pt:1.5,pb:1,flexShrink:0,borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
         <TextField fullWidth size="small" placeholder="Buscar casos…"
           value={F.busca} onChange={e=>setF('busca',e.target.value)}
@@ -716,9 +720,16 @@ export default function MapaCasos() {
     </Box>
   );
 
-  // ─── Painel de Análise (tab mobile) ──────────────────────────────────────
+  // ─── Painel de Análise (tab mobile + painel desktop) ────────────────────────
   const AnalysePanel = () => (
-    <Box sx={{overflow:'auto',height:'100%',p:2}}>
+    <Box sx={{
+      flex:1,
+      display:'flex',
+      flexDirection:'column',
+      overflow:'hidden',
+      minHeight:0,
+    }}>
+      <Box sx={{flex:1, overflow:'auto', p:2}}>
       <Typography variant="caption" sx={{textTransform:'uppercase',letterSpacing:1,color:'text.secondary',fontSize:'0.67rem',display:'flex',alignItems:'center',gap:.7,mb:1.5}}>
         <TrendingUpIcon sx={{fontSize:14}}/> Resumo Epidemiológico
       </Typography>
@@ -748,9 +759,8 @@ export default function MapaCasos() {
         <Box sx={{display:'flex',alignItems:'center',gap:1,mb:1}}><SmartToyIcon color="secondary" sx={{fontSize:16}}/><Typography variant="caption" sx={{color:'secondary.main',fontWeight:700,fontSize:'0.75rem',textTransform:'uppercase',letterSpacing:.5}}>Análise IA</Typography></Box>
         <Typography component="pre" sx={{whiteSpace:'pre-wrap',fontFamily:'monospace',fontSize:'0.68rem',lineHeight:1.7,color:'rgba(255,255,255,0.8)'}}>{ia}</Typography>
       </Card>
-      <Box sx={{display:'flex',gap:1,flexWrap:'wrap'}}>
+      <Box sx={{display:'flex',gap:1,flexWrap:'wrap',pb:1}}>
         <Button size="small" variant="outlined" color="primary" startIcon={<GetAppIcon/>} onClick={exportCSV} sx={{flex:1,borderRadius:2}}>CSV</Button>
-        {/* BOTÃO PDF → pré-visualização */}
         <Button size="small" variant="outlined" color="primary"
           startIcon={previewLoading?<CircularProgress size={13} color="inherit"/>:<PrintIcon/>}
           onClick={previewPDF} disabled={previewLoading}
@@ -758,6 +768,7 @@ export default function MapaCasos() {
           {previewLoading?'Gerando…':'PDF'}
         </Button>
         <Button size="small" variant="outlined" color="secondary" startIcon={<ShareIcon/>} onClick={share} sx={{flex:1,borderRadius:2}}>Partilhar</Button>
+      </Box>
       </Box>
     </Box>
   );
