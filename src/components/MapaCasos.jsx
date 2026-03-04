@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box, Card, Chip, Avatar, List, ListItem, ListItemButton,
@@ -933,16 +932,23 @@ export default function MapaCasos() {
     </Menu>
   );
 
-  const appH = isMobile ? 56 : 64;
-  const bottomNavH = isMobile ? 60 : 0;
+  const APP_H      = isMobile ? 56 : 64;   // altura AppBar
+  const BOTTOM_H   = isMobile ? 60 : 0;    // altura BottomNav
+  const bottomNavH = BOTTOM_H;             // mantido para compatibilidade
 
   return (
     <ThemeProvider theme={darkTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Box sx={{display:'flex',flexDirection:'column',height:'100vh',bgcolor:'background.default',overflow:'hidden'}}>
+        {/* Container raiz: ocupa 100vh, nada ultrapassa */}
+        <Box sx={{
+          display:'flex', flexDirection:'column',
+          height:'100vh', maxHeight:'100vh',
+          bgcolor:'background.default',
+          overflow:'hidden',
+        }}>
 
           {/* ── AppBar ──────────────────────────────────────────────────────── */}
-          <AppBar position="fixed" elevation={0} sx={{zIndex:1300}}>
+          <AppBar position="fixed" elevation={0} sx={{zIndex:1400}}>
             <Toolbar sx={{minHeight:{xs:56,sm:64},px:{xs:1,sm:2},gap:.5}}>
               <Box sx={{display:'flex',alignItems:'center',gap:{xs:.6,sm:1},mr:{xs:.5,sm:1},flexShrink:0}}>
                 <MapIcon sx={{color:'#1a73e8',fontSize:{xs:20,sm:26}}}/>
@@ -1035,7 +1041,8 @@ export default function MapaCasos() {
               </Box>
             </Toolbar>
           </AppBar>
-          <Box sx={{height:appH}}/>
+          {/* Espaçador AppBar fixo */}
+          <Box sx={{height:APP_H, flexShrink:0}}/>
 
           {/* ── Stats collapse ───────────────────────────────────────────── */}
           {!isMobile&&(
@@ -1059,8 +1066,8 @@ export default function MapaCasos() {
             </Collapse>
           )}
 
-          {/* ── Corpo principal ──────────────────────────────────────────────── */}
-          <Box sx={{display:'flex',flex:1,overflow:'hidden',position:'relative'}}>
+          {/* ── Corpo principal — ocupa todo o espaço restante ───────────────── */}
+          <Box sx={{display:'flex', flex:1, overflow:'hidden', minHeight:0}}>
 
             {isDesk&&sidebar&&(
               <Paper elevation={0} sx={{width:{lg:340,xl:380},flexShrink:0,borderRight:'1px solid rgba(255,255,255,0.07)',bgcolor:'background.paper',display:'flex',flexDirection:'column'}}>
@@ -1076,24 +1083,37 @@ export default function MapaCasos() {
             )}
 
             {isMobile ? (
-              <Box sx={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-                <Box sx={{flex:1,display:mobileTab===0?'block':'none',position:'relative',overflow:'hidden'}}>
+              /* ── MOBILE: flex column, tabs empilhados, bottom nav no fluxo ── */
+              <Box sx={{flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0}}>
+
+                {/* Tab 0 — Mapa */}
+                <Box sx={{
+                  flex: mobileTab===0 ? 1 : 0,
+                  display: mobileTab===0 ? 'flex' : 'none',
+                  flexDirection:'column',
+                  overflow:'hidden', minHeight:0,
+                  position:'relative',
+                }}>
                   {loading&&<LinearProgress sx={{position:'absolute',top:0,left:0,right:0,zIndex:20}}/>}
                   <LoadScript googleMapsApiKey={MAPS_KEY} libraries={MAPS_LIBS}
-                    loadingElement={<Box sx={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',bgcolor:'#e8eaed',flexDirection:'column',gap:2}}><CircularProgress color="primary"/><Typography variant="caption">A carregar mapa…</Typography></Box>}>
+                    loadingElement={<Box sx={{display:'flex',alignItems:'center',justifyContent:'center',flex:1,bgcolor:'#e8eaed',flexDirection:'column',gap:2}}><CircularProgress color="primary"/><Typography variant="caption">A carregar mapa…</Typography></Box>}>
                     <MemoizedMap center={center} zoom={zoom} mapType={mapType} viewMode={viewMode}
                       showHeatmap={heatmap} grupos={gruposF} casos={casosF} infoId={infoId}
                       onCase={goToCase} onGroup={goToGroup} onClose={()=>setInfoId(null)}/>
                   </LoadScript>
+
+                  {/* Pill contagem — canto superior esquerdo */}
                   <Box sx={{position:'absolute',top:10,left:10,bgcolor:'rgba(255,255,255,0.96)',borderRadius:20,px:1.5,py:.5,zIndex:10,boxShadow:'0 1px 6px rgba(0,0,0,0.2)',display:'flex',alignItems:'center',gap:.7}}>
                     <PeopleIcon sx={{fontSize:13,color:'#1a73e8'}}/>
                     <Typography sx={{fontSize:'0.7rem',fontWeight:700,color:'#3c4043'}}>
                       {casosF.length} casos{nActiveF>0&&` · ${nActiveF} filtro${nActiveF>1?'s':''}`}
                     </Typography>
                   </Box>
-                  <Box sx={{position:'absolute',top:8,right:10,zIndex:10,display:'flex',flexDirection:'column',gap:.8}}>
+
+                  {/* Filtro + Heatmap — canto superior direito */}
+                  <Box sx={{position:'absolute',top:10,right:10,zIndex:10,display:'flex',flexDirection:'column',gap:.8}}>
                     <IconButton onClick={()=>setFilterOpen(true)} size="small"
-                      sx={{bgcolor:'white',color:'#5f6368',width:40,height:40,boxShadow:'0 2px 8px rgba(0,0,0,0.22)',borderRadius:2,'&:hover':{bgcolor:'#f5f5f5'}}}>
+                      sx={{bgcolor:'white',color:'#5f6368',width:40,height:40,boxShadow:'0 2px 8px rgba(0,0,0,0.22)',borderRadius:2}}>
                       <Badge badgeContent={nActiveF||undefined} color="error" variant="dot"><FilterIcon sx={{fontSize:18}}/></Badge>
                     </IconButton>
                     <IconButton onClick={()=>setHeatmap(v=>!v)} size="small"
@@ -1101,14 +1121,21 @@ export default function MapaCasos() {
                       <LayersIcon sx={{fontSize:18}}/>
                     </IconButton>
                   </Box>
+
+                  {/* Zoom — canto inferior direito, espaçado do fundo */}
                   <Box sx={{position:'absolute',bottom:16,right:10,display:'flex',flexDirection:'column',zIndex:10,boxShadow:'0 2px 8px rgba(0,0,0,0.22)',borderRadius:1.5,overflow:'hidden'}}>
                     <IconButton onClick={()=>setZoom(p=>Math.min(p+1,21))} size="small" sx={{bgcolor:'white',color:'#5f6368',borderRadius:0,width:42,height:42,borderBottom:'1px solid #e0e0e0','&:hover':{bgcolor:'#f5f5f5'}}}><ZoomInIcon sx={{fontSize:21}}/></IconButton>
                     <IconButton onClick={()=>setZoom(p=>Math.max(p-1,1))} size="small" sx={{bgcolor:'white',color:'#5f6368',borderRadius:0,width:42,height:42,'&:hover':{bgcolor:'#f5f5f5'}}}><ZoomOutIcon sx={{fontSize:21}}/></IconButton>
                   </Box>
-                <IconButton onClick={()=>{ const {center:nc,zoom:nz}=calculateBounds(casosF.length>0?casosF:casos); setCenter(nc); setZoom(nz); }}
-  sx={{position:'absolute',bottom:76,right:10,zIndex:10,bgcolor:'white',color:'#5f6368',width:42,height:42,boxShadow:'0 2px 8px rgba(0,0,0,0.22)',borderRadius:1.5,'&:hover':{bgcolor:'#f5f5f5'}}}>
-  <MyLocationIcon sx={{fontSize:20}}/>
-</IconButton>
+
+                  {/* Centrar — acima do zoom */}
+                  <IconButton
+                    onClick={()=>{ const {center:nc,zoom:nz}=calculateBounds(casosF.length>0?casosF:casos); setCenter(nc); setZoom(nz); }}
+                    sx={{position:'absolute',bottom:106,right:10,zIndex:10,bgcolor:'white',color:'#5f6368',width:42,height:42,boxShadow:'0 2px 8px rgba(0,0,0,0.22)',borderRadius:1.5,'&:hover':{bgcolor:'#f5f5f5'}}}>
+                    <MyLocationIcon sx={{fontSize:20}}/>
+                  </IconButton>
+
+                  {/* Legenda — canto inferior esquerdo */}
                   {legend&&(
                     <Card elevation={2} sx={{position:'absolute',bottom:16,left:10,bgcolor:'rgba(255,255,255,0.96)',borderRadius:2,p:1,minWidth:105,zIndex:10}}>
                       <Box sx={{display:'flex',justifyContent:'space-between',alignItems:'center',mb:.4}}>
@@ -1124,12 +1151,40 @@ export default function MapaCasos() {
                     </Card>
                   )}
                 </Box>
-                <Box sx={{flex:1,display:mobileTab===1?'flex':'none',flexDirection:'column',overflow:'hidden',bgcolor:'background.paper'}}>
+
+                {/* Tab 1 — Lista */}
+                <Box sx={{
+                  flex: mobileTab===1 ? 1 : 0,
+                  display: mobileTab===1 ? 'flex' : 'none',
+                  flexDirection:'column', overflow:'hidden', minHeight:0,
+                  bgcolor:'background.paper',
+                }}>
                   <CaseList/>
                 </Box>
-                <Box sx={{flex:1,display:mobileTab===2?'block':'none',overflow:'hidden',bgcolor:'background.paper'}}>
+
+                {/* Tab 2 — Análise */}
+                <Box sx={{
+                  flex: mobileTab===2 ? 1 : 0,
+                  display: mobileTab===2 ? 'flex' : 'none',
+                  flexDirection:'column', overflow:'hidden', minHeight:0,
+                  bgcolor:'background.paper',
+                }}>
                   <AnalysePanel/>
                 </Box>
+
+                {/* ── Bottom Navigation no fluxo (não fixo) ── */}
+                <BottomNavigation value={mobileTab} onChange={(_,v)=>setMobileTab(v)} showLabels
+                  sx={{
+                    height:BOTTOM_H, flexShrink:0, zIndex:1200,
+                    boxShadow:'0 -2px 16px rgba(0,0,0,0.45)',
+                  }}>
+                  <BottomNavigationAction label="Mapa"
+                    icon={<Badge badgeContent={nActiveF||undefined} color="warning" variant="dot"><MapIcon/></Badge>}/>
+                  <BottomNavigationAction label="Lista"
+                    icon={<Badge badgeContent={casosF.length||undefined} color="primary" max={999}
+                      sx={{'& .MuiBadge-badge':{fontSize:'0.5rem',height:14,minWidth:14,top:2,right:-2}}}><ListNavIcon/></Badge>}/>
+                  <BottomNavigationAction label="Análise" icon={<DashboardIcon/>}/>
+                </BottomNavigation>
               </Box>
             ) : (
               /* ── Desktop/Tablet: mapa + painel análise ───────────────── */
@@ -1221,27 +1276,6 @@ export default function MapaCasos() {
               </Box>
             )}
           </Box>
-
-          {/* ── Bottom Navigation fixo (apenas mobile) ──────────────────────── */}
-          {isMobile&&(
-            <>
-              {/* Espaçador para compensar o nav fixo */}
-              <Box sx={{height:bottomNavH,flexShrink:0}}/>
-              <BottomNavigation value={mobileTab} onChange={(_,v)=>setMobileTab(v)} showLabels
-                sx={{
-                  position:'fixed',bottom:0,left:0,right:0,
-                  height:bottomNavH,zIndex:1300,
-                  boxShadow:'0 -2px 16px rgba(0,0,0,0.45)',
-                }}>
-                <BottomNavigationAction label="Mapa"
-                  icon={<Badge badgeContent={nActiveF||undefined} color="warning" variant="dot"><MapIcon/></Badge>}/>
-                <BottomNavigationAction label="Lista"
-                  icon={<Badge badgeContent={casosF.length||undefined} color="primary" max={999}
-                    sx={{'& .MuiBadge-badge':{fontSize:'0.5rem',height:14,minWidth:14,top:2,right:-2}}}><ListNavIcon/></Badge>}/>
-                <BottomNavigationAction label="Análise" icon={<DashboardIcon/>}/>
-              </BottomNavigation>
-            </>
-          )}
 
           {/* ── Gaveta de Filtros (mobile bottom sheet) ───────────────────── */}
           <SwipeableDrawer anchor="bottom" open={filterOpen} onOpen={()=>setFilterOpen(true)} onClose={()=>setFilterOpen(false)}
@@ -1606,7 +1640,7 @@ export default function MapaCasos() {
           {/* ── Snackbar ─────────────────────────────────────────────────────── */}
           <Snackbar open={showNotif} autoHideDuration={4000} onClose={()=>setShowN(false)}
             anchorOrigin={{vertical:'bottom',horizontal:isMobile?'center':'right'}}
-            sx={{mb:{xs:`${bottomNavH+8}px`,sm:2}}}>
+            sx={{mb:{xs:2,sm:2}}}>
             <Alert severity={notifs.at(-1)?.sev||'info'} onClose={()=>setShowN(false)}
               sx={{borderRadius:2,minWidth:220}} variant="filled">
               {notifs.at(-1)?.msg||''}
