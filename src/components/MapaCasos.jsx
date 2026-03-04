@@ -1,4 +1,8 @@
-
+/**
+ * VigiCólera Uige — MapaCasos
+ * Layout 100% responsivo — Mobile + Tablet + Desktop
+ * Com pré-visualização de PDF antes de baixar
+ */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box, Card, Chip, Avatar, List, ListItem, ListItemButton,
@@ -367,8 +371,7 @@ export default function MapaCasos() {
   const [previewUrl, setPreviewUrl]         = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
-  // ── toggle dos 3 botões superiores direitos ─────────────────────────────
-  const [showTools, setShowTools] = useState(true);
+  // Navegação mobile — 0=mapa, 1=lista, 2=análise
   const [mobileTab, setMobileTab] = useState(0);
 
   // Filtros
@@ -1038,73 +1041,44 @@ export default function MapaCasos() {
                   </IconButton>
                 </span></Tooltip>
 
-                {/* Botões colapsáveis: Filtros, CSV, PDF */}
-                <Collapse in={showTools} orientation="horizontal" sx={{'& .MuiCollapse-wrapperInner':{display:'flex',alignItems:'center',gap:.3}}}>
+                {!isMobile&&(
+                  <Tooltip title="Filtros e Lista">
+                    <IconButton size="small" onClick={()=>setSidebar(v=>!v)}
+                      sx={{bgcolor:sidebar?'rgba(26,115,232,0.2)':'rgba(255,255,255,0.07)',color:sidebar?'primary.main':'inherit',borderRadius:1.5}}>
+                      <Badge badgeContent={nActiveF||undefined} color="warning" variant="dot"><FilterIcon sx={{fontSize:18}}/></Badge>
+                    </IconButton>
+                  </Tooltip>
+                )}
 
-                  {!isMobile&&(
-                    <Tooltip title="Filtros e Lista">
-                      <IconButton size="small" onClick={()=>setSidebar(v=>!v)}
-                        sx={{bgcolor:sidebar?'rgba(26,115,232,0.2)':'rgba(255,255,255,0.07)',color:sidebar?'primary.main':'inherit',borderRadius:1.5}}>
-                        <Badge badgeContent={nActiveF||undefined} color="warning" variant="dot"><FilterIcon sx={{fontSize:18}}/></Badge>
-                      </IconButton>
+                {isDesk&&(
+                  <>
+                    <ToggleButtonGroup value={viewMode} exclusive size="small" onChange={(_,v)=>v&&setVM(v)}
+                      sx={{bgcolor:'rgba(255,255,255,0.07)',borderRadius:2,mx:.5}}>
+                      <ToggleButton value="casos" sx={{px:1,py:.3,fontSize:'0.68rem',gap:.4}}><PeopleIcon sx={{fontSize:14}}/>Casos</ToggleButton>
+                      <ToggleButton value="agrupado" sx={{px:1,py:.3,fontSize:'0.68rem',gap:.4}}><LocationCityIcon sx={{fontSize:14}}/>Bairros</ToggleButton>
+                    </ToggleButtonGroup>
+                    <Tooltip title={heatmap?'Ocultar Heatmap':'Mapa de Calor'}>
+                      <IconButton size="small" color={heatmap?'secondary':'inherit'} onClick={()=>setHeatmap(v=>!v)}><LayersIcon sx={{fontSize:18}}/></IconButton>
                     </Tooltip>
-                  )}
-
-                  {isDesk&&(
-                    <>
-                      <ToggleButtonGroup value={viewMode} exclusive size="small" onChange={(_,v)=>v&&setVM(v)}
-                        sx={{bgcolor:'rgba(255,255,255,0.07)',borderRadius:2,mx:.5}}>
-                        <ToggleButton value="casos" sx={{px:1,py:.3,fontSize:'0.68rem',gap:.4}}><PeopleIcon sx={{fontSize:14}}/>Casos</ToggleButton>
-                        <ToggleButton value="agrupado" sx={{px:1,py:.3,fontSize:'0.68rem',gap:.4}}><LocationCityIcon sx={{fontSize:14}}/>Bairros</ToggleButton>
-                      </ToggleButtonGroup>
-                      <Tooltip title={heatmap?'Ocultar Heatmap':'Mapa de Calor'}>
-                        <IconButton size="small" color={heatmap?'secondary':'inherit'} onClick={()=>setHeatmap(v=>!v)}><LayersIcon sx={{fontSize:18}}/></IconButton>
-                      </Tooltip>
-                      <FormControl size="small" sx={{minWidth:92}}>
-                        <Select value={mapType} onChange={e=>setMapType(e.target.value)}
-                          sx={{color:'white',bgcolor:'rgba(255,255,255,0.07)','& .MuiOutlinedInput-notchedOutline':{border:'none'},borderRadius:2,fontSize:'0.68rem'}}>
-                          <MenuItem value="roadmap">Padrão</MenuItem>
-                          <MenuItem value="satellite">Satélite</MenuItem>
-                          <MenuItem value="terrain">Terreno</MenuItem>
-                          <MenuItem value="hybrid">Híbrido</MenuItem>
-                        </Select>
-                      </FormControl>
-                      <Tooltip title="Exportar CSV">
-                        <IconButton size="small" color="inherit" onClick={exportCSV}><GetAppIcon sx={{fontSize:18}}/></IconButton>
-                      </Tooltip>
-                      <Tooltip title="Pré-visualizar / Exportar PDF"><span>
-                        <IconButton size="small" color="inherit" onClick={previewPDF} disabled={previewLoading}>
-                          {previewLoading?<CircularProgress size={15} color="inherit"/>:<PrintIcon sx={{fontSize:18}}/>}
-                        </IconButton>
-                      </span></Tooltip>
-                      <Tooltip title="Partilhar">
-                        <IconButton size="small" color="inherit" onClick={share}><ShareIcon sx={{fontSize:18}}/></IconButton>
-                      </Tooltip>
-                    </>
-                  )}
-
-                </Collapse>
-
-                {/* Botão toggle show/hide dos botões */}
-                <Tooltip title={showTools?'Ocultar ferramentas':'Mostrar ferramentas'}>
-                  <IconButton
-                    size="small"
-                    color="inherit"
-                    onClick={()=>setShowTools(v=>!v)}
-                    sx={{
-                      width:{xs:36,sm:40}, height:{xs:36,sm:40},
-                      bgcolor: showTools?'rgba(26,115,232,0.15)':'rgba(255,255,255,0.07)',
-                      color:   showTools?'primary.main':'rgba(255,255,255,0.5)',
-                      borderRadius:1.5,
-                      transition:'all .2s',
-                      '&:hover':{bgcolor:'rgba(26,115,232,0.2)'},
-                    }}>
-                    {showTools
-                      ? <VisibilityIcon sx={{fontSize:{xs:17,sm:18}}}/>
-                      : <VisibilityOffIcon sx={{fontSize:{xs:17,sm:18}}}/>
-                    }
-                  </IconButton>
-                </Tooltip>
+                    <FormControl size="small" sx={{minWidth:92}}>
+                      <Select value={mapType} onChange={e=>setMapType(e.target.value)}
+                        sx={{color:'white',bgcolor:'rgba(255,255,255,0.07)','& .MuiOutlinedInput-notchedOutline':{border:'none'},borderRadius:2,fontSize:'0.68rem'}}>
+                        <MenuItem value="roadmap">Padrão</MenuItem>
+                        <MenuItem value="satellite">Satélite</MenuItem>
+                        <MenuItem value="terrain">Terreno</MenuItem>
+                        <MenuItem value="hybrid">Híbrido</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Tooltip title="Exportar CSV"><IconButton size="small" color="inherit" onClick={exportCSV}><GetAppIcon sx={{fontSize:18}}/></IconButton></Tooltip>
+                    {/* Botão PDF desktop → pré-visualização */}
+                    <Tooltip title="Pré-visualizar / Exportar PDF"><span>
+                      <IconButton size="small" color="inherit" onClick={previewPDF} disabled={previewLoading}>
+                        {previewLoading?<CircularProgress size={15} color="inherit"/>:<PrintIcon sx={{fontSize:18}}/>}
+                      </IconButton>
+                    </span></Tooltip>
+                    <Tooltip title="Partilhar"><IconButton size="small" color="inherit" onClick={share}><ShareIcon sx={{fontSize:18}}/></IconButton></Tooltip>
+                  </>
+                )}
 
                 <IconButton size="small" color="inherit" onClick={e=>setMore(e.currentTarget)} sx={{width:{xs:36,sm:40},height:{xs:36,sm:40}}}>
                   <MoreVertIcon sx={{fontSize:{xs:19,sm:21}}}/>
